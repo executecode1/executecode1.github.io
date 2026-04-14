@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>QyroBot | Discordメンバーバックアップ・関連サーバー自動参加認証ボット</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="description" content="Discordメンバーバックアップ（メン爆）と関連サーバー自動参加を統合した認証ボット。サーバー凍結対策や予備サーバー誘導を全自動化。高性能なVPN/Proxyブロック搭載。">
+    <meta name="keywords" content="Discord,メン爆,メンバーバックアップ,自動参加,認証ボット,Verify,サーバー移行,バックアップボット,QyroBot">
+    
+    <meta property="og:title" content="QyroBot | Discordメンバーバックアップ・自動参加認証ボット">
+    <meta property="og:description" content="認証と同時に別サーバーへ自動参加！メンバーバックアップ（メン爆）でサーバー凍結リスクを分散する決定版Discordボット。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://qyrobot.github.io/">
+    <meta property="og:site_name" content="QyroBot">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #5865f2;
+            --primary-hover: #4752c4;
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #60a5fa;
+            --success: #22c55e;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(31, 41, 55, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo { font-weight: 800; font-size: 1.5rem; letter-spacing: -0.5px; color: var(--accent); }
+
+        .nav-links { display: flex; align-items: center; }
+        .nav-links a {
+            color: var(--text-main);
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover { color: var(--accent); }
+        .nav-support { color: var(--text-muted) !important; display: flex; align-items: center; gap: 4px; }
+
+        .hero {
+            padding: 160px 20px 100px;
+            text-align: center;
+            background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%);
+        }
+
+        .hero h1 {
+            font-size: clamp(2.2rem, 7vw, 3.8rem);
+            font-weight: 800;
+            margin-bottom: 24px;
+            background: linear-gradient(to right, #ffffff, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 0 auto 35px;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 36px;
+            background: var(--primary);
+            color: #fff;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 20px rgba(88, 101, 242, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            background: var(--primary-hover);
+            box-shadow: 0 15px 30px rgba(88, 101, 242, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: none;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--accent);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .section { max-width: 1100px; margin: auto; padding: 80px 20px; }
+        h2 { text-align: center; font-size: 2rem; margin-bottom: 50px; position: relative; }
+        h2::after { content: ''; display: block; width: 50px; height: 4px; background: var(--primary); margin: 15px auto 0; border-radius: 2px; }
+
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 25px; }
+        .card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: 0.3s;
+        }
+        .card:hover { transform: translateY(-5px); border-color: var(--accent); }
+        .card i { color: var(--accent); margin-bottom: 15px; }
+        .card h3 { margin-bottom: 10px; font-size: 1.1rem; }
+        .card p { font-size: 0.9rem; color: var(--text-muted); }
+
+        .tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 30px; flex-wrap: wrap; }
+        .tab {
+            padding: 12px 24px;
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        .tab.active { background: var(--accent); color: #0f172a; border-color: var(--accent); }
+        .tab-content {
+            display: none;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 24px;
+            text-align: center;
+            animation: fadeIn 0.4s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .tab-content.active { display: block; }
+        
+        .cmd-box {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: var(--accent);
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            border: 1px solid rgba(96, 165, 250, 0.2);
+        }
+        .cmd-slash { color: var(--text-muted); margin-right: 2px; }
+
+        .plans { display: flex; gap: 25px; justify-content: center; flex-wrap: wrap; }
+        .plan {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 24px;
+            width: 320px;
+            border: 2px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+            transition: 0.3s;
+        }
+        .plan.popular { border-color: var(--primary); scale: 1.05; }
+        .price { font-size: 2.5rem; font-weight: 800; color: var(--text-main); margin: 20px 0; }
+        .plan ul { list-style: none; text-align: left; margin-bottom: 30px; }
+        .plan ul li { margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; }
+        .plan ul li i { color: var(--success); }
+
+        .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .step { background: rgba(255, 255, 255, 0.03); padding: 30px; border-radius: 20px; text-align: center; }
+        .step-num { width: 40px; height: 40px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-weight: bold; }
+
+        footer { text-align: center; padding: 60px 20px; color: var(--text-muted); border-top: 1px solid rgba(255, 255, 255, 0.05); }
+        .footer-links { margin-top: 15px; display: flex; justify-content: center; gap: 20px; font-size: 0.9rem; }
+        .footer-links a { color: var(--text-muted); text-decoration: none; display: flex; align-items: center; gap: 5px; }
+        .footer-links a:hover { color: var(--accent); }
+
+        html { scroll-behavior: smooth; }
+
+        @media (max-width: 768px) { .nav-links { display: none; } .plan.popular { scale: 1; } }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+    <div class="logo">QyroBot</div>
+    <div class="nav-links">
+        <a href="#features">特徴</a>
+        <a href="#functions">使い方</a>
+        <a href="#plans">プラン</a>
+        <a href="https://discord.gg/YvnrCyaff3" class="nav-support" target="_blank"><i data-lucide="help-circle" size="18"></i>サポート</a>
+    </div>
+</nav>
+
+<header class="hero">
+    <h1>認証するだけで、<br>別サーバーへ自動参加</h1>
+    <p>
+        ユーザーが認証を完了した瞬間、あらかじめ設定した関連サーバーへ自動で追加します。<br>
+        メンバーバックアップやサブサーバーへの誘導を全自動化しましょう。
+    </p>
+
+    <div class="hero-btns">
+        <a class="btn" href="https://discord.com/oauth2/authorize?client_id=1454267499662016592&scope=bot%20applications.commands&permissions=268504088" target="_blank">
+            <i data-lucide="plus-circle"></i>
+            無料で導入する
+        </a>
+        <a class="btn btn-outline" href="https://discord.gg/YvnrCyaff3" target="_blank">
+            <i data-lucide="message-square"></i>
+            サポートサーバー
+        </a>
+    </div>
+</header>
+
+<section class="section" id="features">
+    <h2>✨ QyroBotの強み</h2>
+    <div class="features-grid">
+        <div class="card">
+            <i data-lucide="link-2"></i>
+            <h3>関連サーバー自動参加</h3>
+            <p>認証と同時に指定した予備サーバー等へもユーザーを自動追加。告知の拡散やリスク分散に最適です。</p>
+        </div>
+        <div class="card">
+            <i data-lucide="refresh-cw"></i>
+            <h3>メンバーバックアップ</h3>
+            <p>サーバー移行や凍結時に備えたメン爆機能を完備。全自動でコミュニティの熱量を逃しません。</p>
+        </div>
+        <div class="card">
+            <i data-lucide="shield-check"></i>
+            <h3>安全な認証システム</h3>
+            <p>高度なVPN / Proxyブロックを標準搭載。荒らしアカウントを排除し、クリーンな環境を守ります。</p>
+        </div>
+        <div class="card">
+            <i data-lucide="gift"></i>
+            <h3>無料ではじめられる</h3>
+            <p>7人の認証データが溜まれば、誰でも無料でバックアップ・自動参加機能を利用開始できます。</p>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="functions">
+    <h2>🧩 主要コマンド</h2>
+    <div class="tabs">
+        <button class="tab active" onclick="showTab(0)">/setrelated</button>
+        <button class="tab" onclick="showTab(1)">/panel</button>
+        <button class="tab" onclick="showTab(2)">/summonfree</button>
+    </div>
+
+    <div class="tab-content active" id="tab-0">
+        <div class="cmd-box"><span class="cmd-slash">/</span>setrelated</div>
+        <h3>関連サーバーの設定</h3>
+        <p>誘導先のサーバーIDを指定します。ユーザーが認証をパスすると、自動的にそのサーバーへ参加処理が行われます。</p>
+    </div>
+
+    <div class="tab-content" id="tab-1">
+        <div class="cmd-box"><span class="cmd-slash">/</span>panel</div>
+        <h3>認証パネルの作成</h3>
+        <p>「認証して参加」ボタン付きのメッセージを設置。洗練されたUIで高い認証率を実現します。</p>
+    </div>
+
+    <div class="tab-content" id="tab-2">
+        <div class="cmd-box"><span class="cmd-slash">/</span>summonfree</div>
+        <h3>無料バックアップ実行</h3>
+        <p>認証済みユーザーを新しいサーバーへ一括招待。7名以上でいつでも無料で実行可能です。</p>
+    </div>
+</section>
+
+<section class="section" id="plans">
+    <h2>💰 運用プラン</h2>
+    <div class="plans">
+        <div class="plan">
+            <h3>無料プラン</h3>
+            <div class="price">¥0</div>
+            <ul>
+                <li><i data-lucide="check-circle-2"></i> 7人認証で1回実行可能</li>
+                <li><i data-lucide="check-circle-2"></i> 関連サーバー自動参加</li>
+                <li><i data-lucide="check-circle-2"></i> 基本的なセキュリティ機能</li>
+            </ul>
+            <a href="#usage" class="btn" style="background: transparent; border: 1px solid var(--primary); width: 100%; justify-content: center;">使ってみる</a>
+        </div>
+
+        <div class="plan popular">
+            <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 4px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">即時対応</div>
+            <h3>即時実行チケット</h3>
+            <div class="price">¥200 <span>/回</span></div>
+            <ul>
+                <li><i data-lucide="check-circle-2"></i> 人数制限なしで今すぐ実行</li>
+                <li><i data-lucide="check-circle-2"></i> 認証なしでの流し込み対応</li>
+                <li><i data-lucide="check-circle-2"></i> LTC決済・個別サポート</li>
+            </ul>
+            <a href="https://discord.gg/YvnrCyaff3" class="btn" style="width: 100%; justify-content: center;">チケット購入</a>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="usage">
+    <h2>📘 導入の手順</h2>
+    <div class="steps">
+        <div class="step">
+            <div class="step-num">1</div>
+            <b>サーバーに招待</b>
+            <p>Botをあなたのサーバーに追加します。</p>
+        </div>
+        <div class="step">
+            <div class="step-num">2</div>
+            <b>コマンドで設定</b>
+            <p><code>/setrelated</code> で誘導先を指定します。</p>
+        </div>
+        <div class="step">
+            <div class="step-num">3</div>
+            <b>パネルを置く</b>
+            <p><code>/panel</code> で認証用メッセージを設置します。</p>
+        </div>
+        <div class="step">
+            <div class="step-num">4</div>
+            <b>自動化完了！</b>
+            <p>認証ユーザーが自動で関連サーバーに増えていきます。</p>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <p>© 2024-2026 QyroBot. All Rights Reserved.</p>
+    <div class="footer-links">
+        <a href="https://discord.gg/YvnrCyaff3" target="_blank"><i data-lucide="message-circle" size="16"></i>サポートサーバー</a>
+    </div>
+</footer>
+
+<script>
+    function showTab(index) {
+        const tabs = document.querySelectorAll(".tab");
+        const contents = document.querySelectorAll(".tab-content");
+        tabs.forEach((t, i) => t.classList.toggle("active", i === index));
+        contents.forEach((c, i) => c.classList.toggle("active", i === index));
+    }
+    lucide.createIcons();
+</script>
+
+</body>
+</html>
